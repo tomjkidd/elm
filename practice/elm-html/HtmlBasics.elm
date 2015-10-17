@@ -1,17 +1,21 @@
-import StartApp
 import StartApp.Simple exposing (start)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List
 
 
 -- MODEL
+
+type alias SelectOption = { label: String, value: String }
 
 type alias Model =
   { x: Int
   , h: String
   , t: String
   , isChecked: Bool
+  , selected: Maybe SelectOption
+  , selectOptions: List SelectOption
   }
 
 
@@ -21,6 +25,7 @@ type Action = Increment | Decrement | Double
   | HeadUpdate String | TailUpdate String | HeadTailSwap
   | IsCheckedUpdate Bool
   | Reset | Clear
+  | SelectedOptionUpdate String
 
 update : Action -> Model -> Model
 update action model =
@@ -33,7 +38,9 @@ update action model =
     HeadTailSwap -> { model | h <- model.t, t <- model.h }
     IsCheckedUpdate newIsChecked -> { model | isChecked <- newIsChecked }
     Reset -> initialModel
-    Clear -> { model | x <- 0, h <- "", t <- "", isChecked <- False }
+    Clear -> { model | x <- 0, h <- "", t <- "", isChecked <- False, selected <- Nothing }
+    SelectedOptionUpdate val -> { model | selected <- findSelectOption val model.selectOptions }
+
 
 -- VIEW
 
@@ -69,13 +76,31 @@ view address model =
         []
       , button [ onClick address Reset ] [ text "Reset" ]
       , button [ onClick address Clear ] [ text "Clear" ]
+      , div
+          []
+          [ div [] [ text "Select with default first option as default" ]
+          , createSelect
+              selectOptions
+              model.selected
+              [on "change" targetValue (\val -> Signal.message address (SelectedOptionUpdate val))]
+              []
+          ]
+      , div
+          []
+          [ div [] [ text "Select with empty option default" ]
+          , createSelectWithEmptyDefault
+              selectOptions
+              model.selected
+              [on "change" targetValue (\val -> Signal.message address (SelectedOptionUpdate val))]
+              []
+          ]
       ]
     ]
 
 modelDisplayStyle : Attribute
 modelDisplayStyle =
   style
-    [ ("font-size", "20px")
+    [ ("font-size", "12px")
     , ("font-family", "monospace")
     , ("display", "inline-block")
     , ("text-align", "center")
@@ -101,8 +126,64 @@ countStyle =
     , ("text-align", "center")
     ]
 
+defaultSelectOption : SelectOption
+defaultSelectOption = { label = "First", value = "1" }
+
+selectOptions : List SelectOption
+selectOptions =
+  [ { label = "First", value = "1" }
+  , { label = "Second", value = "2" }
+  , { label = "Third", value = "3" }
+  ]
+
 initialModel : Model
-initialModel = { x = 0, h = "Head", t = "Tail", isChecked = True }
+initialModel =
+  { x = 0
+  , h = "Head"
+  , t = "Tail"
+  , isChecked = True
+  , selected = Just defaultSelectOption
+  , selectOptions = selectOptions
+  }
+
+findSelectOption : String -> List SelectOption -> Maybe SelectOption
+findSelectOption needle haystack =
+  List.head <| List.filter (\opt -> needle == opt.value) haystack
+
+createOption : SelectOption -> List Attribute -> Html
+createOption opt optionAttrs =
+  option
+    (value opt.value :: optionAttrs)
+    [ text opt.label ]
+
+createOptionHelper opt optionAttrs default =
+  let
+    isSelected =
+      case default of
+        Nothing -> False
+        Just dft -> dft.value == opt.value
+    newOptionAttrs = (selected isSelected) :: optionAttrs
+  in
+    createOption opt newOptionAttrs
+
+createSelect : List SelectOption -> Maybe SelectOption -> List Attribute -> List Attribute -> Html
+createSelect options default selectAttrs optionAttrs =
+  select
+    selectAttrs
+    (List.map (\opt -> createOptionHelper opt optionAttrs default) options)
+
+createSelectWithEmptyDefault : List SelectOption -> Maybe SelectOption -> List Attribute -> List Attribute -> Html
+createSelectWithEmptyDefault options default selectAttrs optionAttrs =
+  let
+    optionsListHtml = (List.map (\opt -> createOptionHelper opt optionAttrs default) options)
+    newOptions =
+     case default of
+       Nothing -> (createOption { label = "-- pick a value --", value = "" } [ selected True, disabled True ]) :: optionsListHtml
+       Just dft -> optionsListHtml
+  in
+    select
+      selectAttrs
+      newOptions
 
 main =
   StartApp.Simple.start
