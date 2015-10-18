@@ -9,6 +9,91 @@ import List
 
 type alias SelectOption = { label: String, value: String }
 
+type Node =
+  Node
+    { datum : String
+    , children : List Node
+    }
+
+defaultNode =
+  Node
+    { datum = "Level 1"
+    , children =
+      [ Node
+          { datum = "Level 2"
+          , children = []
+          }
+      ]
+    }
+
+defaultTree : List Node
+defaultTree =
+  [ Node
+    { datum = "Group 1"
+    , children =
+      [ Node
+          { datum = "Object 1"
+          , children = []
+          }
+        , Node
+          { datum = "Object 2"
+          , children = []
+          }
+        , Node
+          { datum = "Object 3"
+          , children = []
+          }
+      ]
+    }
+  , Node
+    { datum = "Group 2"
+    , children =
+      [ Node
+          { datum = "Object 1"
+          , children =
+            [ Node
+                { datum = "SubObject 1"
+                , children = []
+                }
+            ]
+          }
+        , Node
+          { datum = "Object 2"
+          , children = []
+          }
+        , Node
+          { datum = "Object 3"
+          , children = []
+          }
+      ]
+    }
+  ]
+
+-- http://stackoverflow.com/questions/5899337/proper-way-to-make-html-nested-list
+childrenToHtml : List Node -> List Html
+childrenToHtml nodes =
+  (List.map (\node -> nodeToHtml node) nodes)
+
+nodeToHtml : Node -> Html
+nodeToHtml (Node node) =
+  let
+    nodeChildren =
+      if not (List.length node.children == 0)
+        then [ ul [] (childrenToHtml node.children) ]
+        else []
+  in
+    li [ class node.datum ] nodeChildren
+
+forestToHtml : List Node -> Html
+forestToHtml nodes =
+ ul [] (List.map (\tree -> nodeToHtml tree) nodes)
+
+
+{-nodeToHtml : Node a -> Html
+nodeToHtml (Node node) =
+  ul [] (List.map (\child -> nodeToHtml child) node.children)
+-}
+
 type alias Model =
   { x: Int
   , h: String
@@ -94,6 +179,8 @@ view address model =
               [on "change" targetValue (\val -> Signal.message address (SelectedOptionUpdate val))]
               []
           ]
+      , ul [] [ nodeToHtml defaultNode ]
+      , forestToHtml defaultTree
       ]
     ]
 
