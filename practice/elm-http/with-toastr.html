@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Use Elm in JS</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css" rel="stylesheet" type="text/css" />
+    <!-- Add necessary styles -->
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <!-- We don't actually need anything in the body -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.js"></script>
+  </body>
+  <!-- Import our compiled Elm code -->
+  <script src="elm.js"></script>
+
+  <!-- Run our Elm app! -->
+  <script>
+    var app = Elm.fullscreen(Elm.WithToastr);
+    app.ports.showToast.subscribe(function(toasrtMsg){
+        toastr[toasrtMsg.msgType](toasrtMsg.msg);
+    });
+  </script>
+</html>
