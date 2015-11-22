@@ -1,33 +1,56 @@
-module MultiwayTreeZipper where
--- TODO: Add specific exports
--- TODO: Add documentation
+module MultiwayTreeZipper
+    ( Context (..), Breadcrumbs, Zipper
+    , goToChild, goUp, goToRoot
+    , updateDatum, replaceDatum
+    , datum, maybeDatum
+    ) where
+-- TODO: Add more documentation
 
-import MultiwayTree exposing (Tree (..), Forest, children)
+{-| A library for navigating and updating immutable trees. The elements in
+the tree must have the same type. The trees are implemented in a Huet
+Zipper fashion.
+
+# References
+[The Zipper, Gerard Huet](https://www.st.cs.uni-saarland.de/edu/seminare/2005/advanced-fp/docs/huet-zipper.pdf)
+[Learn You A Haskell, Zippers, Miran Lipovaca](http://learnyouahaskell.com/zippers)
+
+# Future work
+Might be able to integrate existing [Rose Tree](http://package.elm-lang.org/packages/TheSeamau5/elm-rosetree) to work with the Zipper.
+Wanted the first version to be self contained.
+
+-}
 
 import List
 import Graphics.Element exposing (show)
 import Maybe exposing (Maybe (..))
 
-{-| The Context allows us to keep all of the information needed to reconstruct
-the MultiwayTree as it is navigated with a Zipper -}
-type Context a = Context
-    a -- datum from the node we came from
-    (List (Tree a)) -- children that come before me
---    (Tree a) -- me, not used because it would be redundant (and the compiler doesn't like it due to recursion)
-    (List (Tree a)) --children that come after me
+import MultiwayTree exposing (Tree (..), Forest, children)
 
-{-| As the tree is navigated, the needed Context is pushed onto the list of
-Breadcrumbs -}
+
+{-| The necessary information needed to reconstruct a MultiwayTree as it is
+navigated with a Zipper. This context include the datum that was at the previous
+node, a list of children that came before the node, and a list of children that
+came after the node.
+-}
+type Context a = Context a (List (Tree a)) (List (Tree a))
+
+
+{-| A list of Contexts that is contructed as a MultiwayTree is navigated.
+Breadcrumbs are used to retain information about parts of the tree that move out
+of focus. As the tree is navigated, the needed Context is pushed onto the list
+Breadcrumbs, and they are maintained in the reverse order in which they are
+visited -}
 type alias Breadcrumbs a = List (Context a)
 
-{-| The Zipper provides a structure to keep track of the current Tree, as well
-as the Breadcrumbs to allow us to continue navigation through the rest of the
-tree.
+
+{-| A structure to keep track of the current Tree, as well as the Breadcrumbs to
+allow us to continue navigation through the rest of the tree.
 -}
 type alias Zipper a = (Tree a, Breadcrumbs a)
 
-{-| This function is unique to MultiwayTree needs. In order to navigate to
-children of any Tree, a way to break the children into pieces is needed.
+{-| Separate a list into three groups. This function is unique to MultiwayTree
+needs. In order to navigate to children of any Tree, a way to break the children
+into pieces is needed.
 
 The pieces are:
 * before: The list of children that come before the desired child
@@ -46,6 +69,23 @@ splitOnIndex n xs =
             Nothing -> Nothing
             Just f -> Just (before, f, after)
 
+
+{-| Move up relative to the current Zipper focus. This allows navigation from a
+child to it's parent.
+
+    (&>) = Maybe.andThen
+
+    simpleTree =
+        Tree "a"
+            [ Tree "b" []
+            , Tree "c" []
+            , Tree "d" []
+            ]
+
+    Just (simpleTree, [])
+        &> goToChild 0
+        &> goUp
+-}
 goUp : Zipper a -> Maybe (Zipper a)
 goUp (tree, breadcrumbs) =
     case breadcrumbs of
@@ -53,6 +93,22 @@ goUp (tree, breadcrumbs) =
             Just (Tree datum (before ++ [tree] ++ after), bs)
         [] -> Nothing
 
+
+{-| Move down relative to the current Zipper focus. This allows navigation from
+a parent to it's children.
+
+    (&>) = Maybe.andThen
+
+    simpleTree =
+        Tree "a"
+            [ Tree "b" []
+            , Tree "c" []
+            , Tree "d" []
+            ]
+
+    Just (simpleTree, [])
+        &> goToChild 1
+-}
 goToChild : Int -> Zipper a -> Maybe (Zipper a)
 goToChild n (Tree datum children, breadcrumbs) =
     let maybeSplit = splitOnIndex n children
@@ -62,6 +118,25 @@ goToChild n (Tree datum children, breadcrumbs) =
             Just (before, focus, after) ->
                 Just (focus, (Context datum before after) :: breadcrumbs )
 
+
+{-| Move to the root of the current Zipper focus. This allows navigation from
+any part of the tree back to the root.
+
+    (&>) = Maybe.andThen
+
+    simpleTree =
+        Tree "a"
+            [ Tree "b"
+                [ Tree "e" [] ]
+            , Tree "c" []
+            , Tree "d" []
+            ]
+
+    Just (simpleTree, [])
+        &> goToChild 0
+        &> goToChild 1
+        &> goToRoot
+-}
 goToRoot : Zipper a -> Maybe (Zipper a)
 goToRoot (tree, breadcrumbs) =
     case breadcrumbs of
