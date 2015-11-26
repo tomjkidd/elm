@@ -17,3 +17,9 @@
  4. Create a view function that renders each component in the order that they are desired.
   * Again, use each component's view functions to do this work.
   * Use Signal.forwardTo to map components to each of the Actions created in 2.
+
+
+#Useful
+* elm-make --warn <ModuleName> will report the types for functions that are not
+annotated. [Elm Discuss](https://groups.google.com/forum/#!topic/elm-discuss/JI1VRiKEUzs)
+        elm-make --warn Zipper.elm
