@@ -21,9 +21,34 @@ init query results service =
     ( Model query results service
     , Effects.none)
 
+
 type Action a = GetResults
+    | GetResultsImmediate String
     | ResultsLoaded (Maybe (List a))
     | UpdateQuery String
+
+
+update : Action a -> Model a -> (Model a, Effects (Action a))
+update action model =
+    case action of
+
+        UpdateQuery newQuery -> ( { model | query <- newQuery }, Effects.none)
+
+        GetResults ->
+            ( model
+            , taskToEffect (model.service model.query)
+                 (\maybeResults -> ResultsLoaded maybeResults)
+            )
+
+        GetResultsImmediate newQuery ->
+            ( { model | query <- newQuery }
+            , taskToEffect (model.service newQuery)
+                 (\maybeResults -> ResultsLoaded maybeResults)
+            )
+            
+        ResultsLoaded maybeResults ->
+            ( { model | results <- (Maybe.withDefault [] maybeResults) }, Effects.none)
+
 
 view : Signal.Address (Action a) -> Model a -> Html
 view address model =
@@ -38,18 +63,15 @@ view address model =
         , div [] [ text (toString model.results) ]
         ]
 
-
-update : Action a -> Model a -> (Model a, Effects (Action a))
-update action model =
-    case action of
-        UpdateQuery newQuery -> ( { model | query <- newQuery }, Effects.none)
-        GetResults ->
-            ( model
-            , taskToEffect (model.service model.query)
-                 (\maybeResults -> ResultsLoaded maybeResults)
-                {-}|> Task.toMaybe
-                |> Task.map (\maybeResult -> ZipcodesLoaded maybeResult)
-                |> Effects.task-}
-            )
-        ResultsLoaded maybeResults ->
-            ( { model | results <- (Maybe.withDefault [] maybeResults) }, Effects.none)
+onInputView : Signal.Address (Action a) -> Model a -> Html
+onInputView address model =
+    div []
+        [ input
+             [ placeholder "query value"
+             , value model.query
+             , on "input" targetValue (\str -> Signal.message address (GetResultsImmediate str))
+             ]
+             []
+        , button [ onClick address GetResults ] [ text "Get Results" ]
+        , div [] [ text (toString model.results) ]
+        ]
