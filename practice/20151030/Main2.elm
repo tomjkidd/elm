@@ -32,11 +32,16 @@ view address model =
     let expanderAttrs =
         [ classList
             [ ("fa", True)
-            , ("fa-arrow-right", not model.expanded)
-            , ("fa-arrow-down", model.expanded)
+            , ("fa-caret-right", not model.expanded)
+            , ("fa-caret-down", model.expanded)
             ]
         , onClick address ToggleExpand
-        , style [ ("cursor", "pointer") ]
+        , style
+            [ ("cursor", "pointer")
+            , ("min-width", "15px")
+            , ("min-height", "15px")
+            , ("padding", "3px")
+            ]
         ]
     in
         div (DynamicStyle.hover [ ("background-color", "transparent", "lightgrey") ])
