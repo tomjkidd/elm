@@ -14,8 +14,8 @@ type alias Model =
 
 init =
     let
-        (top, topFx) = SearchInput.init "top query" [] Services.lookupZipCode
-        (bot, botFx) = SearchInput.init "bot query" [] Services.lookupZipCode
+        (top, topFx) = SearchInput.init "" [] Services.lookupZipCode
+        (bot, botFx) = SearchInput.init "" [] Services.lookupZipCode
     in
         (Model top bot
         , Effects.batch
@@ -48,7 +48,7 @@ view address model =
     div
         []
         [ SearchInput.view (Signal.forwardTo address Top) model.top
-        , SearchInput.view (Signal.forwardTo address Bottom) model.bottom
+        , SearchInput.onInputView (Signal.forwardTo address Bottom) model.bottom
         ]
 
 app =
