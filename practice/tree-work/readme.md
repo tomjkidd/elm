@@ -4,6 +4,11 @@ Elm. The need became clear when trying to create a Tree component for use with
 the Elm Architecture. In order to update a model of the tree for node
 selection/expansion was the key motivation.
 
+#Prior Work
+https://www.st.cs.uni-saarland.de/edu/seminare/2005/advanced-fp/docs/huet-zipper.pdf
+http://learnyouahaskell.com/zippers
+
+
 #Details
 I wanted to evolve the problem in a set of Questions and Answers to progress
 from the basics to how to use the ideas to do useful work.
