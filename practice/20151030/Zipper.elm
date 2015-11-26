@@ -109,8 +109,10 @@ elemAt dirs (Node x l r) =
 {-| For changeToP and elemAt, the Directions serve as a *focus*
 -}
 
+createSpacer : Graphics.Element.Element
 createSpacer = spacer 400 50
 
+main : Graphics.Element.Element
 main = collage 500 500
     (map toForm [(flow down
         [ show freeTree -- Our base case
