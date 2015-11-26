@@ -10,11 +10,12 @@ import TextForwarder
 type alias Model =
     { textForwarder : TextForwarder.Model
     , receiver : TextForwarder.Model
+    , forwardedMessages : List String
     }
 
 init : (Model, Effects Action)
 init =
-    ( Model (TextForwarder.Model "Abe") (TextForwarder.Model "Betty"), Effects.none )
+    ( Model (TextForwarder.Model "Abe") (TextForwarder.Model "Betty") [], Effects.none )
 
 type Action
     = ForwarderChange TextForwarder.Action
@@ -35,7 +36,7 @@ update action model =
                 TextForwarder.ForwardMessage msg ->
                     let (r, rfx) = TextForwarder.update (TextForwarder.UpdateMessage msg) model.receiver
                     in
-                        ( { model | receiver <- r }, Effects.none )
+                        ( { model | receiver <- r, forwardedMessages <- msg :: model.forwardedMessages }, Effects.none )
 
         ReceiverChange act ->
             case act of
@@ -53,5 +54,6 @@ view address model =
     div []
         [ TextForwarder.view (Signal.forwardTo address ForwarderChange) model.textForwarder,
           TextForwarder.view (Signal.forwardTo address ReceiverChange) model.receiver,
-          button [ onClick address Reset ] [ text "Reset" ]
+          button [ onClick address Reset ] [ text "Reset" ],
+          div [] [ text (toString model.forwardedMessages)]
         ]
