@@ -3,7 +3,7 @@ module MultiwayTreeTransform where
 import Utils exposing (..)
 import MultiwayTree exposing (..)
 import MultiwayTreeData exposing (..)
-import MultiwayTreeZipper exposing (goToChildWithDefault, goToRoot, Zipper)
+import MultiwayTreeZipper exposing (goToChild, goToRoot, Zipper)
 
 -- TODO: This function has a lot of potential for learning with respect to being more general!
 {-| Create a structure that allows a function to be applied with a list accumulator
@@ -28,13 +28,6 @@ transformModel model = mapAccum
     )
     model
     []
-
-goToChild : Int -> Zipper (String, List Int) -> Zipper (String, List Int)
-goToChild = goToChildWithDefault (Tree ("ERROR!",[]) [])
-
-goUp = MultiwayTreeZipper.goUp
-
-goToRoot = MultiwayTreeZipper.goToRoot
 
 transformedTree = transformModel initTree
 
