@@ -81,7 +81,7 @@ getExpander (Tree (tree, path) children) address =
                 [ ("padding-left", "5px")
                 , ("cursor", "default")
                 ]
-              ] [text "test label"]
+              ] [text (toString tree.datum)]
             , div [
                 style
                     [ ("display", displayValue) ]
