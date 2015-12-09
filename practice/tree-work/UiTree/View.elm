@@ -12,7 +12,7 @@ import MultiwayTreeData exposing (..)
 
 import UiTree.Model exposing (..)
 
-getChildExpandStyle : Tree (UiNode a, Path) -> Address Action -> Attribute
+getChildExpandStyle : Tree (UiNode a, Path) -> Address (Action a) -> Attribute
 getChildExpandStyle (Tree (tree, path) children) address =
     let
         displayValue =
@@ -24,11 +24,11 @@ getChildExpandStyle (Tree (tree, path) children) address =
              ]
 
 -- http://stackoverflow.com/questions/5899337/proper-way-to-make-html-nested-list
-forestToHtml : List (Tree (UiNode a, Path)) -> Signal.Address Action -> List Html
+forestToHtml : List (Tree (UiNode a, Path)) -> Signal.Address (Action a)-> List Html
 forestToHtml forest address =
   (List.map (\tree -> treeToHtml tree address) forest)
 
-treeToHtml : Tree (UiNode a, Path)-> Signal.Address Action -> Html
+treeToHtml : Tree (UiNode a, Path)-> Signal.Address (Action a) -> Html
 treeToHtml tree address =
   let
     childExpandStyle = getChildExpandStyle tree address
@@ -53,7 +53,7 @@ hasChildren tree =
 oneOrMore : List a -> Bool
 oneOrMore cs = List.length cs > 0
 
-getExpander : Tree (UiNode a, Path) -> Address Action -> Html
+getExpander : Tree (UiNode a, Path) -> Address (Action a) -> Html
 getExpander (Tree (tree, path) children) address =
     let expanderAttrs =
         [ classList
@@ -61,7 +61,7 @@ getExpander (Tree (tree, path) children) address =
             , ("fa-caret-right", not tree.expanded && oneOrMore children)
             , ("fa-caret-down", tree.expanded && oneOrMore children)
             ]
-        , onClick address (UiTree.Model.Expand path)
+        , onClick address (UiTree.Model.Expand (tree, path))
         , style
             [ ("cursor", "pointer")
             , ("min-width", "15px")
@@ -95,7 +95,7 @@ getExpander (Tree (tree, path) children) address =
 pluggableView fn =
     \address model -> fn address model
 
-view : Address Action -> Tree (UiNode a, Path) -> Html
+view : Address (Action a) -> Tree (UiNode a, Path) -> Html
 view address model =
     let zipperTree = model
 

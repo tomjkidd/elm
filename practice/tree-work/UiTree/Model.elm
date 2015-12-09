@@ -10,9 +10,9 @@ type alias Model = Tree
 type alias Location = Int
 type alias Path = List Location
 
-type Action
+type Action a
     = Select Path
-    | Expand Path
+    | Expand (UiNode a, Path)
 
 
 type alias UiNode a =

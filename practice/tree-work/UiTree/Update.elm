@@ -52,8 +52,6 @@ updateTreeHelper updateFn model path =
                 &> updateDatum updateFn
                 &> goToRoot
                 |> (Maybe.map fst)
-        test = Debug.log "path" zipPath
-        test2 = Debug.log "focus" focus
     in
         case newModel of
             Nothing -> model
@@ -65,11 +63,11 @@ updateTreeHelper updateFn model path =
  Add ToggleExpand action
     Use Breadcrumbs with Zipper to navigate to the data, toggle expanded
 -}
-update : Action -> Tree (UiNode a, Path) -> Tree (UiNode a, Path)
+update : Action a -> Tree (UiNode a, Path) -> Tree (UiNode a, Path)
 update action model =
     case action of
         Select path ->
             updateTreeHelper updateSelected model path
 
-        Expand path ->
+        Expand (tree, path) ->
             updateTreeHelper updateExpanded model path
