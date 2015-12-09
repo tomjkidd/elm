@@ -9,13 +9,15 @@ import MultiwayTreeZipper exposing (..)
 import MultiwayTreeTransform
 import MultiwayTreeData exposing (..)
 
-import UiTree.Model exposing (..)
-import UiTree.Update exposing (..)
-import UiTree.View exposing (..)
+--import UiTree.Model exposing (..)
+--import UiTree.Update exposing (..)
+--import UiTree.View exposing (..)
+
+import UiTree exposing (..)
 
 import StartApp.Simple as StartApp
 
-initializeUiTree : Tree a -> Tree (UiNode a, Path)
+{-initializeUiTree : Tree a -> Tree (UiNode a, Path)
 initializeUiTree = zipperLocationTree
 
 testModel : Tree (UiNode String)
@@ -29,11 +31,11 @@ initialModel = initializeUiTree initTree
 
 testUpdate : Tree (UiNode String, Path)
 testUpdate =
-    update (Select [0]) initialModel
+    update (Select [0]) initialModel-}
 
 main : Signal Html
 main = StartApp.start
-    { model = initialModel
-    , update = UiTree.Update.update
-    , view = UiTree.View.view
+    { model = elmConfig.model
+    , update = elmConfig.update
+    , view = elmConfig.view
     }

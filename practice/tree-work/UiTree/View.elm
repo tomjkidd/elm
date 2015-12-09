@@ -32,13 +32,14 @@ treeToHtml : Tree (UiNode a, Path)-> Signal.Address (Action a) -> Html
 treeToHtml tree address =
   let
     childExpandStyle = getChildExpandStyle tree address
+    treeNode = defaultNodeGenerator tree address
     treeChildren =
       if not (List.length (children tree) == 0)
         then [ ul [ childExpandStyle ] (forestToHtml (children tree) address) ]
         else []
 
     listChildren =
-        (getExpander tree address) :: treeChildren
+        treeNode :: treeChildren
     childStyle = [ class "child-style" ] ++ [ childExpandStyle ]
 
   in
@@ -53,8 +54,8 @@ hasChildren tree =
 oneOrMore : List a -> Bool
 oneOrMore cs = List.length cs > 0
 
-getExpander : Tree (UiNode a, Path) -> Address (Action a) -> Html
-getExpander (Tree (tree, path) children) address =
+defaultNodeGenerator : Tree (UiNode a, Path) -> Address (Action a) -> Html
+defaultNodeGenerator (Tree (tree, path) children) address =
     let expanderAttrs =
         [ classList
             [ ("fa", True)
@@ -95,7 +96,41 @@ getExpander (Tree (tree, path) children) address =
 pluggableView fn =
     \address model -> fn address model
 
-view : Address (Action a) -> Tree (UiNode a, Path) -> Html
+forestToHtmlWithOptions : UiTreeOptions a -> List (Tree (UiNode a, Path)) -> Signal.Address (Action a)-> List Html
+forestToHtmlWithOptions options forest address =
+  (List.map (\tree -> treeToHtmlWithOptions options tree address) forest)
+
+treeToHtmlWithOptions : UiTreeOptions a -> Tree (UiNode a, Path)-> Signal.Address (Action a) -> Html
+treeToHtmlWithOptions options tree address =
+  let
+    childExpandStyle = getChildExpandStyle tree address
+    treeNode = options.nodeHtmlGenerator tree address
+    treeChildren =
+      if not (List.length (children tree) == 0)
+        then [ ul [ childExpandStyle ] (forestToHtmlWithOptions options (children tree) address) ]
+        else []
+
+    listChildren =
+        treeNode :: treeChildren
+    childStyle = [ class "child-style" ] ++ [ childExpandStyle ]
+
+  in
+    li [ class "node-class"
+       , style [("list-style-type", "none")]
+       ] listChildren
+
+viewFromOptions : UiTreeOptions a -> Address (Action a) -> Tree (UiNode a, Path) -> Html
+viewFromOptions options =
+    (\address model ->
+        let zipperTree = model
+
+        in
+            div
+                [ class "ui-tree" ]
+                [ (treeToHtmlWithOptions options zipperTree address) ]
+    )
+
+view: Address (Action a) -> Tree (UiNode a, Path) -> Html
 view address model =
     let zipperTree = model
 

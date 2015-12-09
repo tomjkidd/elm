@@ -1,11 +1,14 @@
 module UiTree.Model where
 
+import Signal exposing (Address)
+import Html exposing (Html)
+
 import MultiwayTree exposing (Tree (..))
 import MultiwayTreeZipper exposing (..)
 import MultiwayTreeTransform
 import MultiwayTreeData exposing (..)
 
-type alias Model = Tree
+type alias Model a = Tree a
 
 type alias Location = Int
 type alias Path = List Location
@@ -31,3 +34,8 @@ datum2UiDatum datum =
 uiDatum2Datum : UiNode a -> a
 uiDatum2Datum uiDatum =
     uiDatum.datum
+
+type alias UiTreeOptions a =
+    { multiSelect: Bool
+    , nodeHtmlGenerator: (Tree (UiNode a, Path) -> Address (Action a) -> Html)
+    }
