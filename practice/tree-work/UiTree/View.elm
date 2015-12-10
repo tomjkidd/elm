@@ -6,9 +6,6 @@ import Html.Events exposing (..)
 import Signal exposing (Address)
 
 import MultiwayTree exposing (Tree (..), datum, children)
-import MultiwayTreeZipper exposing (..)
-import MultiwayTreeTransform
-import MultiwayTreeData exposing (..)
 
 import UiTree.Model exposing (..)
 
@@ -54,8 +51,33 @@ hasChildren tree =
 oneOrMore : List a -> Bool
 oneOrMore cs = List.length cs > 0
 
+{-| A function that provides an example node template that dumps the datum as a label.
+
+Creating a function in this style allows a custom node to be used with the view,
+with the `viewFromOptions` function.
+-}
 defaultNodeGenerator : Tree (UiNode a, Path) -> Address (Action a) -> Html
-defaultNodeGenerator (Tree (tree, path) children) address =
+defaultNodeGenerator = fontAwesomeBaseNode defaultNodeHtml
+
+{-| A function that creates a simple plain text representation of the datum.
+-}
+defaultNodeHtml : UiNode a -> Html
+defaultNodeHtml tree = text (toString tree.datum)
+
+{-| A function to provide a sane default node template. This can be used as a
+guide for how to define a template that is custom.
+
+Note that it is important to tie in the Actions you want to support, as well
+as any styling or classes.
+
+This function assumes that font awesome will be available in the html, and uses
+it to provide the expand/collapse icons in the tree.
+
+`nodeFn` allows you to pick which part of the datum to use as the label, if it
+has a complex type.
+-}
+fontAwesomeBaseNode : (UiNode a -> Html) -> Tree (UiNode a, Path) -> Address (Action a) -> Html
+fontAwesomeBaseNode nodeFn (Tree (tree, path) children) address =
     let expanderAttrs =
         [ classList
             [ ("fa", True)
@@ -75,26 +97,19 @@ defaultNodeGenerator (Tree (tree, path) children) address =
                 True -> "block"
                 False -> "none"
     in
-        --div (DynamicStyle.hover [ ("background-color", "transparent", "lightgrey") ])
         div []
             [ i expanderAttrs []
             , span [ style
                 [ ("padding-left", "5px")
                 , ("cursor", "default")
                 ]
-              ] [text (toString tree.datum)]
+              ] [nodeFn tree]
             , div [
                 style
                     [ ("display", displayValue) ]
               ]
               []
             ]
-
---type alias NodeGenerator a = (Address Action -> Tree (UiNode a, Path) -> Html)
-
---pluggableView : NodeGenerator a -> Tree (UiNode a, Path) -> Html
-pluggableView fn =
-    \address model -> fn address model
 
 forestToHtmlWithOptions : UiTreeOptions a -> List (Tree (UiNode a, Path)) -> Signal.Address (Action a)-> List Html
 forestToHtmlWithOptions options forest address =
@@ -138,6 +153,3 @@ view address model =
         div
             [ class "ui-tree" ]
             [ (treeToHtml zipperTree address) ]
-        {-div
-            [ class "ui-tree" ]
-            [ text "test" ]-}

@@ -62,3 +62,8 @@ In an imperative language, a node could be found and then updated directly, but 
 To support this, I need a way to find the node I'm after, and to replace it with
 a copy of a node with a different state, and to return the rest of the tree
 unchanged.
+
+## Still In Progress
+* Currently only supports a tree, but a forest is a common desired use case.
+* Need to fill out Select requirements
+* Is there a better story for custom node templates?

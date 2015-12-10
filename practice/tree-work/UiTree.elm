@@ -1,19 +1,13 @@
 module UiTree where
 
 import Html exposing (..)
---import Html.Attributes exposing (..)
 import Signal exposing (Address)
 
 import MultiwayTree exposing (Tree (..))
---import MultiwayTreeZipper exposing (..)
---import MultiwayTreeTransform
-import MultiwayTreeData exposing (..)
 
 import UiTree.Model exposing (..)
 import UiTree.Update exposing (..)
 import UiTree.View exposing (..)
-
-type alias ZipTree a = Tree (UiNode a, Path)
 
 type alias ElmPieces a =
     { model: ZipTree a
@@ -30,14 +24,8 @@ defaultOptions =
 initializeUiTree : Tree a -> Tree (UiNode a, Path)
 initializeUiTree =  UiTree.Update.zipperLocationTree
 
-initialModel : Tree (UiNode String, Path)
-initialModel = initializeUiTree initTree
+update : Action a -> ZipTree a -> ZipTree a
+update = UiTree.Update.update
 
-elmConfig : ElmPieces String
-elmConfig =
-    { model = initialModel
-    , update = UiTree.Update.update
-    , view = UiTree.View.viewFromOptions defaultOptions
-    }
-
--- TODO: getUiTreeComponents : Tree a -> UiTreeOptions a -> ElmPieces a
+defaultView : Address (Action a) -> ZipTree a -> Html
+defaultView = UiTree.View.viewFromOptions defaultOptions

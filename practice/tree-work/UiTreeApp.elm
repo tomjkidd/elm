@@ -1,18 +1,11 @@
 module Main where
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Signal exposing (Address)
 
 import MultiwayTree exposing (Tree (..))
-import MultiwayTreeZipper exposing (..)
-import MultiwayTreeTransform
 import MultiwayTreeData exposing (..)
-
---import UiTree.Model exposing (..)
---import UiTree.Update exposing (..)
---import UiTree.View exposing (..)
-
+import UiTree.Model exposing (UiNode, Path)
 import UiTree exposing (..)
 
 import StartApp.Simple as StartApp
@@ -33,9 +26,16 @@ testUpdate : Tree (UiNode String, Path)
 testUpdate =
     update (Select [0]) initialModel-}
 
-main : Signal Html
-main = StartApp.start
-    { model = elmConfig.model
-    , update = elmConfig.update
-    , view = elmConfig.view
+
+initialModel : Tree (UiNode String, Path)
+initialModel = UiTree.initializeUiTree initTree
+
+elmConfig : ElmPieces String
+elmConfig =
+    { model = initialModel
+    , update = UiTree.update
+    , view = UiTree.defaultView
     }
+
+main : Signal Html
+main = StartApp.start elmConfig

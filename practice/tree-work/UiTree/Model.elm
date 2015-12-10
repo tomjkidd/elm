@@ -13,16 +13,18 @@ type alias Model a = Tree a
 type alias Location = Int
 type alias Path = List Location
 
+
 type Action a
     = Select Path
     | Expand (UiNode a, Path)
-
 
 type alias UiNode a =
     { datum : a
     , selected : Bool
     , expanded : Bool
     }
+
+type alias ZipTree a = Tree (UiNode a, Path)
 
 datum2UiDatum : a -> UiNode a
 datum2UiDatum datum =
